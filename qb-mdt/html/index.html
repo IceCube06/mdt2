@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Sunset MDT</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <script src="https://unpkg.com/vue@3"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+        integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
+        integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+</head>
+
+<style>
+    .officer-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 500;
+        padding: 0;
+        margin: 0;
+        font-size: large;
+        line-height: 52px;
+    }
+
+
+    .bottom-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 500;
+        line-height: 40px;
+        margin: 0;
+        font-size: 1.3rem;
+    }
+
+    .query-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 500;
+        line-height: 26px;
+        margin: 0;
+    }
+
+    .bottom-button {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 500;
+        line-height: 40px;
+        margin: 0;
+        color: gray;
+    }
+
+    .bottom-button-box:hover {
+        text-shadow: 1px 1px 5px gray;
+        transition: 0.5s;
+    }
+
+
+    .query-box:hover {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        transition: 0.5s;
+    }
+
+    .remove-blue-border {
+        outline: 0px !important;
+        -webkit-appearance: none;
+        box-shadow: none !important;
+    }
+
+    /* Scrollbar */
+
+    ::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background-color: #f1f1f1;
+        border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: gray;
+        border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #555;
+    }
+
+    .alert {
+        background-color: var(--bs-danger);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: fit-content;
+    }
+
+    textarea:focus-visible {
+        outline: none;
+    }
+
+    .alert-text {
+        color: white;
+        font-size: 1.25rem;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 500;
+    }
+
+    .font-poppins {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    #recordbox::-webkit-scrollbar {
+        display: none !important;
+    }
+</style>
+
+<body style="background-color: transparent">
+
+    <div id="app">
+        <div class="container rounded-2 bg-body position-relative shadow" style="margin-top: 15vh;" v-show="show">
+            <div class="row border-bottom border-light border-2">
+                <div class="col-md-6 text-start text-dark d-flex align-items-center">
+                    <p class="officer-title">Tere, {{officerName}}!</p>
+                </div>
+
+                <div class="col-md-2 text-center text-white"></div>
+
+                <div class="col-md-4 text-end">
+                    <div class="input-group rounded m-2">
+                        <input type="search" class="form-control remove-blue-border" @keyup.enter="makeSearch()"
+                            placeholder="Search" aria-label="Search" aria-describedby="search-addon"
+                            v-model="searchQuery" />
+                        <span class="input-group-text border-0" id="search-addon" @click="makeSearch()">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="toast-container"></div>
+
+            <div v-show="loading == true">
+                <div class="d-flex justify-content-center m-5">
+                    <div class="spinner-border" style="width: 5rem; height: 5rem; border-width: 0.45rem;" role="status">
+                        <span class="sr-only">Laadimine...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div v-show="canShowPage('profile')">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-4 border-bottom border-2 border-light mb-2">
+                                <img :src="getProfileMugshot" class="img-thumbnail rounded mt-3" alt="profile mugshot"
+                                    style="width: 200px; height: 200px;">
+                            </div>
+
+                            <div class="col-md-8 border-bottom border-2 border-light mb-2">
+                                <div class="row">
+                                    <div class="col-md-12 text-center border border-2 border-light mt-2">
+                                        <p class="query-title">Nimi: {{profile.name}}</p>
+                                    </div>
+
+                                    <div class="col-md-12 text-center border border-2 border-light mt-2">
+                                        <p class="query-title">Sünnikuupäev: {{profile.dob}}</p>
+                                    </div>
+
+                                    <div class="col-md-12 text-center border border-2 border-light mt-2">
+                                        <p class="query-title">Telefoninumber: {{profile.phone}}</p>
+                                    </div>
+
+                                    <div class="col-md-12 text-center border border-2 border-light mt-2">
+                                        <p class="query-title">Töö: {{profile.job}}</p>
+                                    </div>
+
+                                    <div class="col-md-12 text-center border border-2 border-light mt-2">
+                                        <p class="query-title">Auaste: {{profile.job_grade}}</p>
+                                    </div>
+
+                                    <div class="col-md-12 text-center mt-2">
+                                        <div class="input-group mb-2 input-group-sm">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text" id="img-icon"><i
+                                                        class="fa-solid fa-image"></i></span>
+                                            </div>
+                                            <input type="text" @change=saveProfilePicture() class="form-control"
+                                                placeholder="" aria-label="image-url" aria-describedby="img-input"
+                                                v-model.lazy="profile.img" style="box-shadow: none; height: 30px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12" style="height: 232px;">
+                                <div class="row">
+                                    <div class="mb-1" :class="hasWarrant ? 'col-md-4' : 'col-md-8'">
+                                        <p class="bottom-title text-start">Märkmed</p>
+                                    </div>
+
+                                    <div v-if="hasWarrant" class="col-md-4 mb-1 rounded bg-danger">
+                                        <p class="bottom-title text-white text-center">Tagaotsitav</p>
+                                    </div>
+
+                                    <div class="col-md-4 text-end">
+                                        <button class="btn btn-success notes-button" @click="saveNotes()"
+                                            disabled>Salvesta</button>
+                                    </div>
+
+                                    <div class="col-md-12 mb-1">
+                                        <textarea class="border rounded border-2"
+                                            style="resize: none; width: 100%; height: 182px; border-color: rgb(219, 217, 217);"
+                                            name="notes" id="notes" cols="30" rows="10">{{profile.notes}}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-12 border-bottom border-2 border-light">
+                                <div class="row mb-2 mt-2 text-center">
+                                    <div class="col-md-12 text-center">
+                                        <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+                                            <button class="btn btn-secondary -" @click="changeProfilePage('records')"><i
+                                                    class="fa-solid fa-folder"></i> Karistusregister</button>
+                                            <button class="btn btn-secondary" @click="changeProfilePage('fine')"><i
+                                                    class="fa-solid fa-file"></i> Prokuratuur</button>
+                                            <button class="btn btn-secondary" @click="changeProfilePage('assets')"><i
+                                                    class="fa-solid fa-house"></i> Varad</button>
+                                            <button class="btn btn-secondary" @click="changeProfilePage('licenses')"><i
+                                                    class="fa-solid fa-id-card"></i> Load</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="profile_page == 'loading'">
+                                <div class="col-md-12 d-flex align-items-center justify-content-center"
+                                    style="height: 410px;">
+                                    <div class="spinner-border"
+                                        style="width: 5rem; height: 5rem; border-width: 0.45rem;" role="status">
+                                        <span class="sr-only">Laadimine...</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="profile_page == 'records'">
+                                <div class="col-md-12 font-poppins"
+                                    style="height: 380px; overflow-y: scroll; overflow-x: hidden;">
+                                    <div class="row">
+
+                                        <div v-if="profile.records.length <= 0"
+                                            class="col-md-12 d-flex justify-content-center align-items-center"
+                                            style="height: 380px;">
+                                            <p style="font-family: 'Poppins', sans-serif; font-size: 1.45rem;
+                                            font-weight: 500;
+                                            margin: 0;">
+                                                <i class="fa-solid fa-circle-info fa-xl me-1"></i> Karistusregister on
+                                                puhas!
+                                            </p>
+                                        </div>
+
+                                        <div class="col-md-12" v-for="(item, index) in profile.records">
+                                            <div class="shadow rounded border-light border border-2 p-2 m-2"
+                                                style="width: 98%;">
+                                                <div class="row mb-1">
+                                                    <div class="col-md-7 text-start overflow-hidden">
+                                                        <ul class="list-group">
+
+                                                            <li v-for="(fine, index2) in item.labels"
+                                                                class="list-group-item">
+                                                                {{fine}}
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+
+                                                    <div class="col-md-4 text-center">
+                                                        Done at: {{item.time}}
+                                                    </div>
+
+                                                    <div class="col-md-1" @click="showMoreRecord(item)">
+                                                        <div v-if="!item.extra_content">
+                                                            <i class="fa-solid fa-angle-down mt-1"></i>
+                                                        </div>
+
+                                                        <div v-else>
+                                                            <i class="fa-solid fa-angle-up mt-1"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- <Transition enter-active-class="animate__animated animate__slideInDown"
+                                                leave-active-class="animate__animated animate__slideOutUp"
+                                                :duration="{ enter: 500, leave: 200 }"> -->
+                                                <div class="row" v-show="item.extra_content"
+                                                    style="overflow-y: auto; height: 300px;">
+
+                                                    <div
+                                                        class="col-md-12 mt-1 text-center border-light border-bottom border-2">
+                                                        <p class="query-title">Kirjeldus</p>
+                                                    </div>
+
+                                                    <div class="col-md-12 mt-1 text-center">
+                                                        <div class="input-group mb-2">
+                                                            <textarea class="form-control" aria-label="With textarea"
+                                                                disabled
+                                                                style="resize: none; box-shadow: none; height: 200px;">{{item.desc}}</textarea>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-md-12 mt-1">
+                                                        <ul class="list-group">
+                                                            <li class="list-group-item">
+                                                                Autor: {{item.author}}
+                                                            </li>
+
+                                                            <li class="list-group-item">
+                                                                Arve: {{item.amount}}€
+                                                            </li>
+
+                                                            <li class="list-group-item">
+                                                                Vangla: {{item.prison}} kuud
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <!-- </Transition> -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="profile_page == 'warrant'">
+                                <div class="col-md-12 mt-2 d-flex justify-content-center align-items-center"
+                                    style="height: 380px;">
+                                    <div class="row w-100">
+                                        <div class="col-md-12">
+                                            <div class="card text-center">
+                                                <div class="card-header">
+                                                    <h5 class="p-0 m-0">Märgi isik tagaotsitavaks!</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="input-group mb-2">
+                                                        <textarea class="form-control" id="warrant-desc"
+                                                            aria-label="With textarea"
+                                                            style="resize: none; box-shadow: none; height: 200px;"></textarea>
+                                                    </div>
+                                                    <button class="btn btn-danger" @click="addWarrant()"><i
+                                                            class="fa-solid fa-user-plus"></i> Lisa tagaotsitavaks
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-else-if=" profile_page=='fine'">
+                                <div class=" col-md-12 mt-2" style="height: 380px;">
+                                    <div class="row w-100">
+                                        <div class="col-md-12 my-4 d-flex justify-content-center align-items-center">
+                                            <button class="btn btn-primary p-3" role="button" title="search_fines"
+                                                @click="changeProfilePage('search_fines')"><i
+                                                    class="fa-solid fa-magnifying-glass"></i>
+                                                Otsi
+                                                trahve</button>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="row">
+                                                <div class="col-md-4 text-center">
+                                                    <p class="query-title">Max:
+                                                        {{profile.newrecord.maxFine}}€</p>
+                                                </div>
+
+                                                <div class="col-md-4 text-center">
+                                                    <p class="query-title">Description</p>
+                                                </div>
+
+                                                <div class="col-md-4 text-center">
+                                                    <p class="query-title">Max:
+                                                        {{profile.newrecord.maxPrison}} kuud</p>
+                                                </div>
+
+                                                <textarea class="border rounded border-2"
+                                                    style="resize: none; width: 100%; height: 230px; border-color: rgb(219, 217, 217);"
+                                                    name="notes" cols="30" rows="10"
+                                                    v-model="profile.newrecord.desc"></textarea>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12 mt-2">
+                                            <div class="row">
+
+                                                <div class="col-md-4 me-2">
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text rounded-0 rounded-start"
+                                                                style='padding: 10px;' id="basic-addon1"><i
+                                                                    class="fa-solid fa-euro-sign"></i></span>
+                                                        </div>
+                                                        <input type="text" class="form-control"
+                                                            style="box-shadow: none;" v-model="profile.newrecord.fine"
+                                                            aria-label="Username" aria-describedby="basic-addon1">
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4 me-2">
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text rounded-0 rounded-start"
+                                                                style='padding: 10px;' id="basic-addon1"><i
+                                                                    class="fa-solid fa-handcuffs"></i></span>
+                                                        </div>
+                                                        <input type="text" class="form-control"
+                                                            style="box-shadow: none;" v-model="profile.newrecord.prison"
+                                                            aria-label="Username" aria-describedby="basic-addon1">
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="col-md-3 text-end">
+                                                    <button class="btn btn-success" @click="makeNewRecord()"><i
+                                                            class="fa-solid fa-handcuffs"></i>
+                                                        Prosecute</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-else-if="profile_page == 'search_fines'">
+                                <div class="row">
+                                    <div class="col-md-10">
+                                        <div class="input-group rounded m-2">
+                                            <input type="search" class="form-control remove-blue-border"
+                                                placeholder="Search for fine`s" aria-describedby="search-addon"
+                                                v-model="profile.newrecord.search" />
+                                            <span class="input-group-text border-0">
+                                                <i class="fas fa-search"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2 d-flex align-items-center">
+                                        <button role="button" title="go_back" class="btn btn-danger"
+                                            @click="changeProfilePage('fine')"><i class="fa-solid fa-backward-step"></i>
+                                            Tagasi</button>
+                                    </div>
+
+                                    <div v-if="filteredFines().length <= 0">
+                                        <div class="col-md-12 d-flex justify-content-center align-items-center">
+                                            <p class="m-2" style="font-family: 'Poppins', sans-serif; font-size: 1.25rem;
+                                            font-weight: 500;">
+                                                <i class="fa-solid fa-circle-info fa-xl me-1"></i>
+                                                Ühtegi trahvi ei leitud!
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-12 p-0 border border-light"
+                                        style="max-height: 360px; overflow-y: scroll; overflow-x: hidden;">
+                                        <ul class="list-group">
+                                            <li v-for="fine in filteredFines()"
+                                                :class="{'border-success': fines[fine.id].times > 0}"
+                                                class="list-group-item m-1 border">
+
+                                                <div class="row">
+                                                    <div class="col-md-8 text-dark text-bold font-poppins d-flex align-items-center"
+                                                        style="line-height: 40px;">
+                                                        {{fine.label}} ({{fines[fine.id].times}}x)</div>
+
+                                                    <div class="col-md-2 text-center d-flex align-items-center">
+                                                        <p class="text-bold text-dark font-poppins m-0">
+                                                            Max. vangla: {{fine.prison}}
+                                                        </p>
+                                                    </div>
+
+                                                    <div class="col-md-2 text-end d-flex align-items-center">
+                                                        <button class="btn btn-success btn-sm m-1"
+                                                            @click="addFine(fine.id)">
+                                                            <i class="fa-solid fa-plus"></i>
+                                                        </button>
+
+                                                        <button class="btn btn-danger btn-sm m-1"
+                                                            @click="removeFine(fine.id)">
+                                                            <i class="fa-solid fa-xmark"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-else-if="profile_page == 'assets'">
+                                <div v-if="profile.assets.length <= 0">
+                                    <div class="col-md-12 mt-2 d-flex justify-content-center align-items-center" style="height: 380px; font-family: 'Poppins', sans-serif; font-size: 1.45rem;
+                                        font-weight: 500;
+                                        margin: 0;">
+                                        <i class="fa-solid fa-circle-info fa-xl me-1"></i> Ühtegi vara ei leitud!
+                                    </div>
+                                </div>
+
+                                <div v-else class="col-md-12 mt-2"
+                                    style="height: 380px; max-height: 380px; overflow-y: scroll;">
+                                    <div class="row w-100">
+                                        <div>
+                                            <div class="col-md-12 m-2 p-2 rounded border-light border border-2"
+                                                v-for="(item, index) in profile.assets">
+
+                                                <div v-if="item.type == 'property'">
+                                                    <div class="row d-flex align-items-center">
+                                                        <div class="col-md-1">
+                                                            <i class="fa-solid fa-house fa-xl"></i>
+                                                        </div>
+
+                                                        <div class="col-md-6">
+                                                            <p class="query-title">Address:
+                                                                {{item.name}}</p>
+                                                        </div>
+
+                                                        <div class="col-md-5">
+                                                            <p class="query-title">{{item.rented ?
+                                                                'Renditud' : 'Omanik'}}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div v-else-if="item.type == 'vehicle'">
+                                                    <div class="row d-flex align-items-center">
+                                                        <div class="col-md-1">
+                                                            <i class="fa-solid fa-car fa-xl"></i>
+                                                        </div>
+
+                                                        <div class="col-md-5">
+                                                            <p class="query-title">Mudel: {{item.name}}
+                                                            </p>
+                                                        </div>
+
+                                                        <div class="col-md-6">
+                                                            <p class="query-title">Numbrimärk: {{item.plate}}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- TODO: Add weapons to assets? -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-else-if="profile_page == 'licenses'">
+                                <div class="col-md-12 mt-2 d-flex justify-content-center align-items-center"
+                                    style="height: 380px;">
+                                    <div class="row mt-3">
+
+                                        <div class="col-md-12 d-flex justify-content-center align-items-center font-poppins fs-3"
+                                            style="font-weight: 500;"
+                                            v-if="!profile.veh_license && !profile.gun_license">
+                                            <i class="fa-solid fa-circle-info fa-xl me-1"></i> Ühtegi luba ei leitud
+                                        </div>
+
+                                        <div v-else>
+                                            <div class="col-md-12 mt-2">
+                                                <div class="card text-center">
+                                                    <div class="card-header">
+                                                        Juhiluba
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">Eemalda juhiload</h5>
+                                                        <p class="card-text">Pärast eemaldamist pole võimalik seda
+                                                            tagasi anda!</p>
+                                                        <button class="btn btn-danger" :disabled="!profile.veh_license"
+                                                            @click="removeLicense('drive')"><i
+                                                                class="fa-solid fa-trash"></i>
+                                                            Eemalda</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-12 mt-4">
+                                                <div class="card text-center">
+                                                    <div class="card-header">
+                                                        Relvaluba
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">Eemalda relvaluba
+                                                        </h5>
+                                                        <p class="card-text">Pärast eemaldamist pole võimalik seda
+                                                            tagasi anda!</p>
+                                                        <button :disabled="!profile.gun_license"
+                                                            @click="removeLicense('weapon')" class="btn btn-danger"><i
+                                                                class="fa-solid fa-trash"></i>
+                                                            Eemalda</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-show="canShowPage('home')">
+                <div class="row">
+                    <div class="col-md-6 d-flex justify-content-center align-items-center">
+                        <img src="imgs/pol_logo.png" class="" width="364" height="364" alt="Politsei logo">
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <div class="row m-2">
+                            <div class="col-md-12 text-center border-bottom border-2 border-dark">
+                                <p class="query-title">Viimased otsingud</p>
+                            </div>
+
+                            <div v-if="lastSearches.length <= 0">
+                                <div class="col-md-12 mt-2 d-flex justify-content-center align-items-center" style="height: 350px; font-family: 'Poppins', sans-serif; font-size: 1.45rem;
+                                        font-weight: 500;
+                                        margin: 0;">
+                                    <i class="fa-solid fa-circle-info fa-xl me-1"></i> Ühtegi varasemat otsingut ei
+                                    leitud!
+                                </div>
+                            </div>
+
+                            <div v-else class="scroll-box"
+                                style="max-height: 400px; overflow-y: scroll; overflow-x: hidden;">
+                                <div class="col-md-12 query-box rounded p-2 m-1 border border-2 border-light"
+                                    v-for="(item, index) in lastSearches"
+                                    @click="selectedResult = null; searchQuery = item.name; makeSearch();">
+                                    <p class="query-title text-center">{{item.name}}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div v-show="canShowPage('search')">
+                <div class="row m-2">
+                    <div class="col-md-6 border-end border-light border-2">
+
+                        <div class="scroll-box" style="max-height: 400px; overflow-y: scroll; overflow-x: hidden;">
+                            <div v-for='(item, index) in searchResults'
+                                class="query-box border border-2 border-light p-2 m-2 rounded"
+                                @click="openResult(index)">
+
+                                <div class="row">
+                                    <div class="col-md-1">
+                                        <div v-if="item.type == 'citizen'" style="margin-left: 55%;">
+                                            <i class="fa-solid fa-person fa-xl"></i>
+                                        </div>
+
+                                        <div v-else-if="item.type == 'vehicle'" style="margin-left: 40%;">
+                                            <i class="fa-solid fa-car fa-xl"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-11">
+                                        <p class="text-dark m-0 query-title">{{item.type == 'citizen' ?
+                                            item.name :
+                                            item.plate}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="selectedResult == null"
+                        class="col-md-6 d-flex justify-content-center h-100 align-self-center">
+                        <div class="row">
+                            <div class="col-md-12 query-title">
+                                <i class="fa-solid fa-circle-info fa-xl me-1"></i> Andmeid ei leitud.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-else class="col-md-6" style="max-height: 400px; overflow: hidden;">
+                        <div class="row">
+                            <div class="col-md-12 border-bottom border-2 border-light text-center mb-2">
+                                <p class="query-title">{{selectedResult.type == 'citizen' ?
+                                    selectedResult.name :
+                                    selectedResult.plate}}</p>
+                            </div>
+
+                            <div class="col-md-6 border-end border-2 border-light d-flex justify-content-center">
+                                <img class="rounded img-thumbnail"
+                                    :src="selectedResult.img || 'imgs/' + selectedResult.type + '.png'" alt="mugshot"
+                                    style="width: 200px; height: 200px;">
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="row text-center">
+                                    <div v-if="selectedResult.type == 'citizen'">
+                                        <div class="col-md-12 border-bottom border-2 border-light">
+                                            <p class="query-title">Juhiluba</p>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <p class="text-dark m-2 font-poppins"
+                                                :class="{'text-danger': selectedResult.veh_license}">
+                                                {{selectedResult.veh_license ? 'Valid' :
+                                                'Invalid'}}</p>
+                                        </div>
+
+                                        <div class="col-md-12 border-bottom border-2 border-light">
+                                            <p class="query-title">Relvaluba</p>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <p class="text-dark m-2 font-poppins"
+                                                :class="{'text-danger': selectedResult.gun_license}">
+                                                {{selectedResult.gun_license ? 'Valid' :
+                                                'Invalid'}}</p>
+                                        </div>
+                                    </div>
+
+                                    <div v-else-if="selectedResult.type == 'vehicle'">
+                                        <div class="col-md-12 border-bottom border-2 border-light">
+                                            <p class="query-title">Owner</p>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <p class="text-dark m-2">{{selectedResult.owner}}</p>
+                                        </div>
+
+                                        <div class="col-md-12 mt-1 border-bottom border-2 border-light">
+                                            <p class="query-title">Colors</p>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <p class="text-dark my-2">{{selectedResult.color2 ?
+                                                selectedResult.color1 +
+                                                ' & ' +
+                                                selectedResult.color2 : selectedResult.color1}}</p>
+                                        </div>
+
+                                        <div v-if="selectedResult.warrant">
+                                            <div class="col-md-12">
+                                                <p class="bottom-title text-danger text-uppercase"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-12 mt-2 mb-2">
+                                        <button class="btn btn-success"
+                                            @click="openProfile(selectedResult.identifier, selectedResult.cid);">Täisprofiil
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-show="canShowPage('warrants')">
+                <div v-if="warrants.length <= 0" class="d-flex justify-content-center">
+                    <div class="row">
+                        <div class="col-md-12 m-5" style="font-size: 1.5rem; font-family: 'Poppins', sans-serif;
+                        font-weight: 500;">
+                            <i class="fa-solid fa-circle-info fa-xl me-1"></i> Tagaotsitavaid ei leitud!
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else class="row">
+
+                    <div class="col-md-12 scroll-box overflow-auto" style="max-height: 400px;">
+
+                        <div class="row d-flex justify-content-center">
+                            <div v-for="(item, index) in warrants" class="col-md-5 m-2 p-2 bg-light shadow rounded">
+
+                                <div class="row">
+                                    <div>
+                                        <div class="col-md-12 mb-1 p-0 border-bottom border-2 border-dark text-center">
+                                            <p class="text-dark query-title">{{item.name}}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 text-center">
+                                        <p class="text-dark m-0 query-title">Autor: {{item.author}}</p>
+                                    </div>
+
+                                    <div class="col-md-6 text-center">
+                                        <p class="text-dark m-0 query-title">Lõpeb:
+                                            {{item.expire_text}}</p>
+                                    </div>
+
+                                    <div class="col-md-12 text-center mt-1">
+                                        <button class="btn btn-success w-50"
+                                            @click="page = 'warrant'; selectedWarrant = warrants[index];">Veel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+                <!--   <div class="row">
+                    <div class="col-md-12 border-top border-2 border-light text-center">
+                        <button class="btn btn-success w-25 m-2" @click="page = 'add_warrant';">Add
+                            Warrant/Bolo</button>
+                    </div>
+                </div> -->
+            </div>
+
+            <div v-show="canShowPage('warrant')">
+                <div class="row">
+                    <div class="col-md-12 border-bottom border-2 border-dark text-center mb-2">
+                        <p class="bottom-title">{{selectedWarrant.name}}</p>
+                    </div>
+
+                    <div class="d-flex justify-content-center">
+                        <div class="col-md-12 w-75 bg-light shadow p-1 rounded mb-2 mt-1">
+                            <div class="text-center border-bottom border-2 mb-1">
+                                <p class="text-dark m-0 bottom-title">Kirjeldus</p>
+                            </div>
+
+                            <div v-if="typeof selectedWarrant.description == 'string' && selectedWarrant.description.length <= 0 || selectedWarrant.description == null"
+                                class="text-center">
+                                <p class="text-dark m-0 query-title">Puudub kirjeldus.</p>
+                            </div>
+
+                            <p v-else class="text-dark text-center m-0 query-title">
+                                {{selectedWarrant.description}}</p>
+                        </div>
+                    </div>
+
+
+                    <div class="col-md-6 text-center mt-1">
+                        <button class="btn btn-danger w-50" @click="page = 'warrants';">Tagasi</button>
+                    </div>
+
+                    <div class="col-md-6 text-center mt-1 mb-1">
+                        <button class="btn btn-danger w-50" @click="deleteWarrant()">Eemalda</button>
+                    </div>
+                </div>
+            </div>
+
+            <div v-show="canShowPage('callouts')">
+
+                <div v-if="callouts.length <= 0" class="d-flex justify-content-center">
+                    <div class="row">
+                        <div class="col-md-12 m-5" style="font-size: 1.5rem; font-family: 'Poppins', sans-serif;
+                        font-weight: 500;">
+                            <i class="fa-solid fa-circle-info fa-xl me-1"></i> Ühtegi väljakutset ei leitud.
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else class="row d-flex justify-content-center" style="overflow-y: scroll; max-height: 452px;">
+
+                    <div class="col-md-10 m-2 p-0 shadow border border-2 border-dark"
+                        v-for="(item, index) in callouts.slice().reverse()">
+                        <div class="row">
+                            <div
+                                class="col-md-1 text-start d-flex justify-content-center align-items-center border-end border-light border-2">
+                                <p class="text-dark m-0 query-title">{{item.id}}</p>
+                            </div>
+
+                            <div
+                                class="col-md-8 text-start d-flex align-items-center justify-content-start border-end border-light border-2">
+                                <p class="text-dark m-0 p-0 query-title" style="white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;">{{item.label}}</p>
+                            </div>
+
+                            <div
+                                class="col-md-2 d-flex align-items-center justify-content-end border-end border-light border-2">
+                                <p class="text-dark m-0 query-title">{{item.date}}</p>
+                            </div>
+
+                            <div class="col-md-1 text-end">
+                                <button class="btn btn-success m-2" @click="getCalloutCoords(item.location)"><i
+                                        class="fa-solid fa-location-crosshairs"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="row border-top border-2 border-light">
+                <div class="col-md-4 d-flex justify-content-center">
+                    <div class="bottom-button-box w-50 text-center rounded" @click='clearProfileData();'>
+                        <p class="bottom-button" @click="page = 'callouts';">Väljakutsed</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4 text-center" @click="page = 'home'; searchQuery = ''; clearProfileData();">
+                    <p class="bottom-title">LSPD</p>
+                </div>
+
+                <div class="col-md-4 d-flex justify-content-center">
+                    <div class="bottom-button-box w-50 text-center rounded" @click='clearProfileData();'>
+                        <p class="bottom-button" @click="getWarrants();">Tagaotsitavad</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
+        integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz"
+        crossorigin="anonymous"></script>
+    <script src="./script.js" async defer></script>
+</body>
+
+</html>
